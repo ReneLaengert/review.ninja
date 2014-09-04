@@ -1,3 +1,7 @@
+//this is just a quick fix for testing.. we should be able to pass a ca file to the https calls
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+
 var http = require('http');
 
 //////////////////////////////////////////////////////////////////////////////////////////////
