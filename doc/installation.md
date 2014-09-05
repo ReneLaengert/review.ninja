@@ -4,12 +4,22 @@ Installation
 This guide is thought for people who want to setup a private instance of
 ReviewNinja. It is thought to be executed on an ubuntu machine.
 
+> Tested on Ubuntu 14.04
+
 General
 -------
 
 Create a user to run the application
 
 	sudo adduser --disabled-login --gecos 'ReviewNinja' reviewninja
+
+And install some utilities used in this guide
+
+	sudo apt-get install -y vim git-core
+
+And set some default values for the system
+
+	sudo update-alternatives --set editor /usr/bin/vim.basic
 
 Install Node.JS
 ---------------
@@ -45,24 +55,32 @@ Make sure it is running
 
 	sudo service mongod start
 
-Login as your manager account
+Open the MongoDB interactive shell
 
-	mongo --port 27017 -u manager -p 12345678 --authenticationDatabase admin
+	mongo --port 27017 --authenticationDatabase admin
 
 Add the user reviewninja
 
-	use reporting
+	use reviewninja
 	db.createUser({
 	user: "reviewninja",
 	pwd: "reviewninja",
 	roles: [
-	        { role: "read", db: "reviewninja" },
-	        { role: "write", db: "reviewninja" },
+	        { role: "readWrite", db: "reviewninja" }
 	    ]
 	})
 
+Exit the interactive shell
+
+	exit
+
 Setup ReviewNinja
 -----------------
+
+Start by changing to the user to install ReviewNinja under, which was created
+in the beginning
+
+	su reviewninja
  
 Clone this repository:
 
@@ -75,45 +93,58 @@ The app is located in `/home/review.ninja`.
 Install npm and bower dependencies:
 
 	npm install
-	bower install
 
 To configure the application, copy the `.env.example` file to `.env`:
 
-	cp .env.example venv
+	cp .env.example .env
 
 You need to [register the application on
 GitHub](https://github.com/settings/applications/new). The callback is
-http://localhost:5000/auth/github/callback.  Fill out the name and homepage as
-you wish.
+`<PROTOCOL>://<HOST>:<PORT>/auth/github/callback`. Fill out the name and
+homepage as you wish. E.g. if your application runs on
+`http://reviewninja.example.com/` then the callback url is
+`http://reviewninja.example.com/auth/github/callback`
 
 Set the `GITHUB_CLIENT` and `GITHUB_SECRET` environment variables accordingly
 in the `.env` file.
 
+The `MONGODB` default in the `.env.example` file is correct if you followed
+this guide 100%, however, it is recommended to choose a secure password for
+your MongoDB user.
+
 The following environment variables are mandatory: 
 
+  * `NODE_ENV`
+  * `HOST`
+  * `SESSION_SECRET`
   * `MONGODB`
   * `GITHUB_CLIENT`
   * `GITHUB_SECRET` 
 
-The `MONGODB` default in the `.env.example` file is correct unless you have an
-alternative configuration.
+Refer to [Further Reading on Environment
+Variables](#Further-Reading-on-Environment-Variables) for more information on
+what to set the variables to.
 
-Once that is done you can start the application with:
+Once that is done you can source the environment variables
+
+	source .env
+
+And start the application with
 
 	npm app.js
 
-### Environment Variables
+### Further Reading on Environment Variables
 
 The following are the environment variables you have to configure to run a
 private instance:
 
-> **Pro Tip:** there is an example of these files in the root directory of the
-> application called `.env.example` it contains preset variables suitable for
-> development use.
-
 #### General
 
-`HOST`: Defaults to "review.ninja".
+`NODE_ENV`: Should be set to production, unless you want to help developing
+ReviewNinja
+
+`HOST`: Defaults to "review.ninja". This should not include http://, only the
+hostname your ReviewNinja instance should be accessible under.
 
 `PORT`: The local port to bind to. Defaults to 5000.
 
@@ -152,3 +183,27 @@ example, http and https are used but not on port 80 and 443.
  * `SMTP_SSL`: Use ssl or not, values are "true" or "false". Defaults to "true".
  * `SMTP_USER`: User on the SMTP Server.
  * `SMTP_PASS`: Password for the `SMTP_USER`.
+
+Setup Nginx
+-----------
+
+Once you have your ReviewNinja instance running you probably want to put it
+behind a webserver/reverse-proxy. Our choice is Nginx. These steps must be
+executed with root permissions again.
+
+First install Nginx
+
+	sudo apt-get install nginx
+
+Create a file for the (sub)domain you want to run ReviewNinja on. You can use
+our template of this file and only fill in the blanks.
+
+	cp /home/reviewninja/review.ninja/doc/nginx/reviewninja.example.com /etc/nginx/sites-available/reviewninja.example.com
+
+Then take a look at that file and edit it to your need
+
+	vim /etc/nginx/sites-available/reviewninja.example.com
+
+> *Beware:* this configuration is not using ssl encryption. This file is only
+> to get you started. Read [here how to configure nginx to use
+> ssl](http://nginx.org/en/docs/http/configuring_https_servers.html).

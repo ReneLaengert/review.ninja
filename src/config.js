@@ -53,8 +53,6 @@ module.exports = {
             uri: process.env.MONGODB || process.env.MONGOLAB_URI
         },
 
-        landingPage: process.env.LANDING_PAGE,
-
         static: [
             __dirname + '/bower',
             __dirname + '/client'

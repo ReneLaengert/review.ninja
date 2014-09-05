@@ -9,16 +9,5 @@ before_script:
 after_script:
 - grunt mocha_istanbul && grunt coveralls
 - grunt scsslint --force
-notifications:
-  email: false
-deploy:
-  provider: cloudfoundry
-  api: https://api.run.pivotal.io
-  username: dominik.tornow@gmail.com
-  password:
-    secure: RCdkqInrxxGWox04NhWV5iKZgVMdHFWG46mXUhCFusU2E9k0aqMsAJwhBkF5XMEgxK/D8zOJewDEoPYYhtdVX9mkzrDBhX2D/7++QEvJtwZAGJ+t2MgCIRwOB8mJ3GHW9qIGi1ptuNYUGrGsaxYa4s4rthtj4kHYsgkC6z8sbNY=
-  organization: GithubTeam
-  space: applications
-  on:
-    repo: reviewninja/review.ninja
-    branch: master
+- if [[ $TRAVIS_BRANCH == 'master' ]]; then ./.cf.sh review-ninja-staging; fi
+- if [[ $TRAVIS_BRANCH == 'release' ]]; then ./.cf.sh review-ninja; fi
