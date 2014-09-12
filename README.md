@@ -3,6 +3,7 @@
 ReviewNinja - merge with confidence
 ============
 
+
 <p align="center">
 [![ReviewNinja](https://raw.githubusercontent.com/reviewninja/review.ninja/master/src/client/assets/images/review-ninja-250.png)](http://review.ninja)
 
